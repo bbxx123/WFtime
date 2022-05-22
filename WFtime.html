@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倒计时</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        body {
+            height: 100vh;
+            /* 自己修改图片位置 */
+            background-image: url(./img/zhuzhu4.jpg);
+            /* 指定背景图大小 cover会保持图像的纵横比并将图像缩放成将完全覆盖背景定位区域的最小大小 */
+            background-size: cover;
+            /* 设置背景图像的起始位置 center cnter 就是在中间 */
+            background-position: center center;
+        }
+
+        .container {
+            height: 100%;
+            /* //遮罩层 */
+            background-color: rgba(0, 0, 0, .5);
+            display: flex;
+            /* 水平居中，垂直居中 */
+            /* 设置弹性盒子元素在主轴（横轴）方向上的对齐方式 center 居中排列 */
+            justify-content: center;
+            /* 定义flex子项单独在侧轴（纵轴）方向上的对齐方式 center 元素位于容器中心 */
+            align-self: center;
+            /* 在弹性容器内的各项没有占用交叉轴上所有可用的空间时对齐容器内的各项（垂直） 元素位于容器中心*/
+            align-content: center;
+            /* 换行 */
+            flex-wrap: wrap;
+        }
+
+        html {
+            font-size: 62.5%;
+        }
+
+        h1,
+        [id] {
+            width: 100%;
+            font-size: 3rem;
+            color: white;
+            text-align: center;
+        }
+
+        section {
+            display: flex;
+            justify-content: center;
+
+        }
+
+        .item {
+            margin: 10px;
+        }
+
+        .item p:nth-of-type(2) {
+            font-size: 1.4rem;
+            color: white;
+        }
+
+        h3 {
+            width: 100%;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Girls Dead Monster专用</h1>
+        <h1>三傻倒计时</h1>
+        <h1 id="timeName">柴柴倒计时</h1>
+        <section>
+            <div class="item">
+                <p id="hour">100</p>
+                <p>小时</p>
+            </div>
+            <div class="item">
+                <p id="min">100</p>
+                <p>分钟</p>
+            </div>
+            <div class="item">
+                <p id="sec">100</p>
+                <p>秒数</p>
+            </div>
+        </section>
+        <h3>由 柴柴、痞老板 制作</h3>
+    </div>
+
+</body>
+<script>
+    //获取标签
+    var dHour = document.getElementById('hour');
+    var dMin = document.getElementById('min');
+    var dSec = document.getElementById('sec');
+    var timeName = document.getElementById('timeName');
+    var body = document.body;
+
+    let timer = null; //计时器
+
+    let endTime = new Date().getTime();
+    let flag = 1;
+    const timeInterval = [1, 1];
+
+    function getTime() {
+        // 思路
+        // 1.获取当前时间戳 与 预定时间 做差值比较
+        var date = new Date(); //获取当前时间戳
+        var date2 = new Date(endTime); //预订的时间
+        var dis = date2.getTime() - date.getTime(); //做差值，返回毫秒
+        var time = parseInt(dis / 1000); //转为秒数
+
+        // Math.floor(time/1000) - Math.floor(time/1000)
+        if (date.getTime() > endTime) {
+            clearTimer();
+            resetTimer();
+        }
+
+        // 2.计算出对应的数值，并修改p标签
+        var h = parseInt(time % (24 * 60 * 60) / (60 * 60)); //算出小时
+        dHour.innerHTML = h; //赋值给小时标签
+
+        var m = parseInt(time % (24 * 60 * 60) % (60 * 60) / 60); //算出分钟
+        dMin.innerHTML = m; //赋值给分钟标签
+
+        var s = time % (24 * 60 * 60) % (60 * 60) % 60; //算出秒数
+        dSec.innerHTML = s; //赋值给秒数标签
+
+    }
+
+    function renderBg() {
+        if (flag == 1) {
+            timeName.innerHTML = '距离黑夜';
+            body.style.backgroundImage = "url(./img/day.jpg)"
+        } else {
+            timeName.innerHTML = '距离白天'
+            body.style.backgroundImage = "url(./img/night.jpg)"
+        }
+    }
+
+    function resetTimer() {
+        const interval = timeInterval[flag - 1]
+        endTime += interval * 60 * 1000;
+        flag = !(flag - 1) + 1;
+        setTimer();
+    }
+
+    function setTimer() {
+        getTime();
+        renderBg();
+        timer = setInterval(function () {
+            getTime();
+        }, 1000);
+    }
+
+    function clearTimer() {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+    }
+
+    function getFetch() {
+        fetch('https://capi.uimentama.com/api/timer').then(async function (i) {
+            const { data } = await i.json();
+            flag = data.state;
+            endTime = data.timestamp;
+
+            setTimer();
+        })
+    }
+
+    getFetch();
+    renderBg();
+    getTime();
+
+</script>
+
+</html>
